@@ -1,0 +1,16 @@
+<html xmlns="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Application </title>
+</head>
+<body>
+Halaman Utama
+
+<div sec:authorize="isAuthenticated()">
+    <!-- tampil yang udah login -->
+    Nama user yang login: <p sec:authentication="name">User</p><br />
+    Rolenya " <p sec:authentication="authorities">ROLE_USER</p>
+</div>
+</body>
+</html>

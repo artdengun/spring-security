@@ -148,16 +148,16 @@ public class MahasiswaController { // nama kelas
 <body>
 <form action=""> <!-- kita belum memberikan action pada form ini -->
     <div>
-        <label for="nim">NIM</label>
-        <input type="text" name="nim" id="nim" />
+        <label for="nim">NIM</label> // label dengan nama 
+        <input type="text" name="nim" id="nim" /> // id dengan nim for dan id ini saling berelasi 
     </div>
     <div>
-        <label for="nama">Nama</label>
-        <input type="text" name="nama" id="nama" />
+        <label for="nama">Nama</label> // label saling berelasi
+        <input type="text" name="nama" id="nama" /> // id dengan nama saling berlasi
     </div>
     <div>
-        <label for="semester">Semester</label>
-        <select name="semester" id="semester" >
+        <label for="semester">Semester</label> // label dengan nama semester
+        <select name="semester" id="semester" > // for berelasi dengan id ini 
         <option th:each="i : ${#numbers.sequence( 1, 12) }" value="1" th:value="${i}">Semester 
 <span th:text="${i}">1</span></option> <!-- untuk menampilkan teks secara berulang  -->
         <!-- kita melakikan pengulanngan dari 1 sampai 12   -->
@@ -248,22 +248,22 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Entity
-@Table(name = "s_user")
+@Data // mendefinisikan lombok
+@NoArgsConstructor  // no arguman 
+@AllArgsConstructor // all argumen
+@Entity // mendefinisikan pembuatan table di database
+@Table(name = "s_user") // membuat tabel dengagn nama s_user di database 
 public class User {
 
-    @Id
-    @GeneratedValue
-    private Integer id;
-    private String name;
-    private String password;
-    private boolean active;
+    @Id // wajib ada karean merepresentasikan primary key 
+    @GeneratedValue // agar nilai yang ada dibawah di generated atau update secara otomatis
+    private Integer id; // id ini primary key 
+    private String name; // nama 
+    private String password; // password 
+    private boolean active; // menandakan user yang active atau tidak 
 
-    @OneToMany(mappedBy = "user")
-    private List<UserRoles> roles = new ArrayList<>();
+    @OneToMany(mappedBy = "user") // relasi satu ke banyak yang mapped  user
+    private List<UserRoles> roles = new ArrayList<>();  // kemudian UserROlesnya dimasukan ke dalam array list, 
 }
 
 ```
@@ -282,21 +282,22 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Entity
-@Table(name = "s_Role")
-public class Role {
+@Data // mendefinisikan lomnok
+@NoArgsConstructor // no argumen
+@AllArgsConstructor // all argumen
+@Entity // merepresentasikan pembuatan table didatabase
+@Table(name = "s_Role") // nama table di database
+public class Role { // clasnyaa bernama role 
+ 
+    @Id // wajib ada karna merepresentasikan primary key 
+    @GeneratedValue // nilainya di generated otomatis ketika berubah , ini adalah identifier 
+    private Integer id; // primary key 
+    private String nama;// nama 
+    private String password; // passworrd
 
-    @Id
-    @GeneratedValue
-    private Integer id;
-    private String nama;
-    private String password;
-
-    @OneToMany(mappedBy = "role")
-    private List<UserRoles> list = new ArrayList<>();
+    @OneToMany(mappedBy = "role") // relasi satu ke banyak mapped role 
+    private List<UserRoles> list = new ArrayList<>(); // menampung nilanya dalam list , relasi berpusat di UserRoles
+    // yang menampung nilai
 }
 
 ```
@@ -313,22 +314,22 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Entity
-@Table(name = "s_user_roles")
+@Data // generate setter dan getter 
+@NoArgsConstructor // agar sudah include argumen 
+@AllArgsConstructor // all argumen sudah include
+@Entity // untuk membuat table
+@Table(name = "s_user_roles") // untuk membuat table dengan nama s_user_roles
 public class UserRoles {
 
-    @Id
-    @GeneratedValue
+    @Id // merepresentasikan primary key
+    @GeneratedValue // agar nilainya tergenerate secara otomatis saat data berubah atau termodif 
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne // banyak ke satu ini merepresentasikan si User 
     @JoinColumn(name = "id_user", nullable = false)
     private User user;
 
-    @ManyToOne
+    @ManyToOne // banyak ke satu ini merepresentasikan si Role
     @JoinColumn(name = "id_role", nullable = false)
     private Role role;
 
@@ -346,9 +347,9 @@ import com.deni.springsecurity.entitas.User;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
+@Repository // merepresentasikan repository 
 public interface UserRepository extends PagingAndSortingRepository<User, Integer> {
-    User findByName(String name);
+    User findByName(String name); // find by nama user 
 }
 
 ```
@@ -369,19 +370,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class UserPrincipal implements UserDetails {
+public class UserPrincipal implements UserDetails { // implements si userDetails 
+// untuk bisa menggunakan Authorities
 
-    private User user;
+    private User user; // kita masukan data User 
 
-    public UserPrincipal(User user) {
+    public UserPrincipal(User user) { // si principal punya paramater class User dan object User. 
         this.user = user;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        List<GrantedAuthority> listRole = new ArrayList<>();
-        this.user.getRoles().forEach((ur) -> {
+        List<GrantedAuthority> listRole = new ArrayList<>(); // nilainya kita tampung di array list 
+        this.user.getRoles().forEach((ur) -> { // kita merepresentasikan si user kemudian kita beli perulangan 
             listRole.add(new SimpleGrantedAuthority(ur.getRole().getNama()));
+            // ketika syarat sudah terpenuhi dia akan meng getNama
         });
         return listRole;
     }
@@ -516,4 +519,151 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 }
 
+``` 
+
+16 . tambahkan index controller
+
+```java
+
+package com.deni.springsecurity.controller;
+
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class IndexController {
+
+        @GetMapping("/home")
+        public String indexHtml() {
+                return "/index";
+            }
+}
+
+
 ```
+
+17 . tambahkan pom 
+```xml
+
+<dependency>
+			<groupId>org.thymeleaf.extras</groupId>
+			<artifactId>thymeleaf-extras-springsecurity5</artifactId>
+</dependency>
+
+```
+
+18 . tambahkan index html 
+
+
+```html
+<html xmlns="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Application </title>
+</head>
+<body>
+Halaman Utama
+
+<div sec:authorize="isAuthenticated()">
+    <!-- tampil yang udah login -->
+    Nama user yang login: <p sec:authentication="name">User</p><br />
+    Rolenya " <p sec:authentication="authorities">ROLE_USER</p>
+</div>
+</body>
+</html>
+```
+
+20 . modif mahasiswa controller menjadi seperti ini 
+
+```java
+package com.deni.springsecurity.controller;
+
+import com.deni.springsecurity.entitas.User;
+import com.deni.springsecurity.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller // mendefinisikan bahwa ini adalah class controller
+@RequestMapping("/mahasiswa")
+public class MahasiswaController {
+
+
+       @Autowired
+        private UserRepository userRepository;
+        @GetMapping("/new")
+        public String newMahasiswa(Authentication auth){
+            // username login menggunakan controller yang ngambil data dari database
+            User userLogin = userRepository.findByName(auth.getName());
+            // didalame username itu ada role apa aja?
+            auth.getAuthorities();
+            return "/mahasiswa/TambahMahasiswa";
+        }
+}
+
+```
+
+21 . ubah web security menjadi seperti ini 
+
+
+```java
+
+
+package com.deni.springsecurity.config;
+
+import com.deni.springsecurity.service.UserService;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+@Configuration
+@EnableWebSecurity
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+//    @Override
+//    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+//        auth.inMemoryAuthentication()
+//                .passwordEncoder(passwordEncoder())
+//                .withUser("user")
+//                .password(passwordEncoder().encode("password"))
+//                .roles("USER");
+//    }
+
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/mahasiwa/new").hasRole("OPERATOR")
+                .antMatchers("/daftar/new").access("hasRole('ADMIN') and hasRole('OPERATOR')") // OR salah satu and dua duanya
+                .anyRequest().authenticated()
+                .and().formLogin().defaultSuccessUrl("/home").permitAll()
+                .and().logout().logoutSuccessUrl("/home").permitAll();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider(UserService userService){
+        DaoAuthenticationProvider dao = new DaoAuthenticationProvider();
+        dao.setUserDetailsService(userService);
+        dao.setPasswordEncoder(passwordEncoder());
+        return dao;
+
+    }
+}
+
+```
+22. buat relasi di database 

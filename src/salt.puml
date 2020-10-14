@@ -1,0 +1,239 @@
+@startsalt
+{
+  Just plain text
+  [This is my button]
+  ()  Unchecked radio
+  (X) Checked radio
+  []  Unchecked box
+  [X] Checked box
+  "Enter text here   "
+  ^This is a droplist^
+}
+@endsalt
+
+@startsalt
+{
+  Login    | "   "
+  Password | "****     "
+  [Cancel] | [  OK   ]
+}
+@endsalt
+@startsalt
+{+
+  Login    | "MyName   "
+  Password | "****     "
+  [Cancel] | [  OK   ]
+}
+@endsalt
+@startsalt
+{^"My group box"
+  Login    | "MyName   "
+  Password | "****     "
+  [Cancel] | [  OK   ]
+}
+@endsalt
+
+@startsalt
+{
+  Text1
+  ..
+  "Some field"
+  ==
+  Note on usage
+  ~~
+  Another text
+  --
+  [Ok]
+}
+@endsalt
+
+
+@startsalt
+{
+{T
+ + Maven
+ ++ project
+ +++ Canada
+ +++ USA
+ ++++ New York
+ ++++ Boston
+ +++ Mexico
+ ++ Europe
+ +++ Italy
+ +++ Germany
+ ++++ Berlin
+ ++ Africa
+}
+}
+@endsalt
+
+@startsalt
+{
+{T
++Region        | Population    | Age
++ World        | 7.13 billion  | 30
+++ America     | 964 million   | 30
++++ Canada     | 35 million    | 30
++++ USA        | 319 million   | 30
+++++ NYC       | 8 million     | 30
+++++ Boston    | 617 thousand  | 30
++++ Mexico     | 117 million   | 30
+++ Europe      | 601 million   | 30
++++ Italy      | 61 million    | 30
++++ Germany    | 82 million    | 30
+++++ Berlin    | 3 million     | 30
+++ Africa      | 1 billion     | 30
+}
+}
+@endsalt
+
+
+@startsalt
+{
+..
+== with T!
+{T!
++Region        | Population    | Age
++ World        | 7.13 billion  | 30
+++ America     | 964 million   | 30
+}
+..
+== with T-
+{T-
++Region        | Population    | Age
++ World        | 7.13 billion  | 30
+++ America     | 964 million   | 30
+}
+..
+== with T+
+{T+
++Region        | Population    | Age
++ World        | 7.13 billion  | 30
+++ America     | 964 million   | 30
+}
+..
+== with T#
+{T#
++Region        | Population    | Age
++ World        | 7.13 billion  | 30
+++ America     | 964 million   | 30
+}
+..
+}
+@endsalt
+
+@startuml
+listopeniconic
+@enduml
+
+@startuml
+!unquoted procedure SALT($x)
+"{{
+salt
+%invoke_procedure("_"+$x)
+}}" as $x
+!endprocedure
+
+!procedure _choose()
+{+
+<b>an example
+choose one option
+()one
+()two
+[ok]
+}
+!endprocedure
+
+!procedure _wait()
+{+
+<b>please wait
+operation in progress
+<&clock>
+[cancel]
+}
+!endprocedure
+
+!procedure _success()
+{+
+<b>success
+congratulations!
+[ok]
+}
+!endprocedure
+
+!procedure _error()
+{+
+<b>error
+failed, sorry
+[ok]
+}
+!endprocedure
+
+(*) --> SALT(choose)
+-right-> SALT(wait)
+wait -right-> SALT(success)
+wait -down-> SALT(error)
+@enduml
+
+@startuml
+(*) --> "
+{{
+salt
+{+
+<b>an example
+choose one option
+()one
+()two
+[ok]
+}
+}}
+" as choose
+
+choose -right-> "
+{{
+salt
+{+
+<b>please wait
+operation in progress
+<&clock>
+[cancel]
+}
+}}
+" as wait
+wait -right-> "
+{{
+salt
+{+
+<b>success
+congratulations!
+[ok]
+}
+}}
+" as success
+
+wait -down-> "
+{{
+salt
+{+
+<b>error
+failed, sorry
+[ok]
+}
+}}
+"
+@enduml
+
+@startuml
+start
+while (\n{{\nsalt\n{+\nPassword | "****     "\n[Cancel] | [  OK   ]}\n}}\n) is (Incorrect)
+  :log attempt;
+  :attempt_count++;
+  if (attempt_count > 4) then (yes)
+    :increase delay timer;
+    :wait for timer to expire;
+  else (no)
+  endif
+endwhile (correct)
+:log request;
+:disable service;
+@enduml

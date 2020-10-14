@@ -30,8 +30,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/mahasiwa/new").hasRole("OPERATOR")
                 .antMatchers("/daftar/new").access("hasRole('ADMIN') and hasRole('OPERATOR')") // OR salah satu and dua duanya
                 .anyRequest().authenticated()
-                .and().formLogin().permitAll()
-                .and().logout().logoutSuccessUrl( "/home").permitAll();
+                .and().formLogin().defaultSuccessUrl("/home").permitAll()
+                .and().logout().logoutSuccessUrl("/home").permitAll();
     }
 
     @Bean

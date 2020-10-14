@@ -1,0 +1,82 @@
+@startmindmap
+caption figure 1
+title My super title
+
+* <&flag>Java
+** <&globe>Ubuntu
+*** Linux Mint
+*** Kubuntu
+*** Lubuntu
+**** ngupi
+*** KDE Neon
+** <&graph>LMDE
+** <&pulse>SolydXK
+** <&people>SteamOS
+** <&star>Raspbian with a very long name
+*** <s>Raspmbc</s> => OSMC
+*** <s>Raspyfi</s> => Volumio
+
+header
+My super header
+endheader
+
+center footer My super footer
+
+legend right
+  Short
+  legend
+endlegend
+@endmindmap
+
+
+@startmindmap
++ OS
+++ Ubuntu
++++ Linux Mint
++++ Kubuntu
++++ Lubuntu
++++ KDE Neon
+++ LMDE
+++ SolydXK
+++ SteamOS
+++ Raspbian
+-- Windows 95
+-- Windows 98
+-- Windows NT
+--- Windows 8
+--- Windows 10
+@endmindmap
+
+
+@startmindmap
+* root node
+** some first level node
+***_ second level node
+***_ another second level node
+***_ foo
+***_ bar
+***_ foobar
+** another first level node
+@endmindmap
+
+
+@startmindmap
+*[#Orange] Colors
+**[#lightgreen] Green
+**[#FFBBCC] Rose
+**[#lightblue] Blue
+@endmindmap
+
+
+@startmindmap
+* Class Templates
+**:template <typename T>
+class cname{
+void f1()<U+003B>
+...
+};
+**:other template <typename T>
+class cname{
+...
+};
+@endmindmap
