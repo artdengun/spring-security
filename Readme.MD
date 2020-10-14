@@ -194,7 +194,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity // kita mengenable web security agar konfigurasinya bisa kita gunakan
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter { // kita extendes 
 
-    @Override // kemudian semua method kita pakai dengan menggunakan anotation ovverride
+    @Override //  setiap class yang mengimplement interface kelas tersebut harus di override untuk mengimplementasikan method
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.inMemoryAuthentication() // kita menyimpan data dalam memory. artinya cahce browser kita 
                 .passwordEncoder(passwordEncoder()) // nah disini kita menset untuk menggunakan pengamanan 
@@ -210,6 +210,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter { // kita ex
                 .authorizeRequests() // a
                 .antMatchers("/mahasiwa/new").hasRole("OPERATOR") 
                 // antMatchers artinya link mana aja nih yang bisa di akses oleh si OPERATOR, atau hasRole sesuai yang kita atur nantinya 
+                .antMatchers("daftar/new").access("hasRole('admin') or hasRole('OPERATOR')") // yang bisa akses link si admin atau si operator nilainya harus true salah satunya
+                .antMatchers("daftar/edit").access("hasRole('admin') and hasRole('OPERATOR')") // yang bisa akses link si admin atau si operator  artinya nilainy harus true dua duanya 
                 .anyRequest().authenticated() 
                 .and().formLogin().permitAll() 
                 .and().logout().logoutSuccessUrl("/home").permitAll();
@@ -218,7 +220,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter { // kita ex
                 // jadi bisa kita langsung gunakan 
     }
 
-    @Bean
+    @Bean // fungsinya untuk  menginstance sebuah class
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
         // agar si BCryptPasswordEncoder methodnya kita bisa gunakan
@@ -228,7 +230,290 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter { // kita ex
 
 }
 
+```
 
+kita buat user schema , untuk kita migrate table ke database, tidak menggunakan inMemoryDatabase atau cache di browser
+
+8 . dipackage entity kita buat  class dengan nama  User
+    
+```java
+
+package com.deni.springsecurity.entitas;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "s_user")
+public class User {
+
+    @Id
+    @GeneratedValue
+    private Integer id;
+    private String name;
+    private String password;
+    private boolean active;
+
+    @OneToMany(mappedBy = "user")
+    private List<UserRoles> roles = new ArrayList<>();
+}
 
 ```
-    
+
+9 . Role 
+
+```java
+package com.deni.springsecurity.entitas;
+
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "s_Role")
+public class Role {
+
+    @Id
+    @GeneratedValue
+    private Integer id;
+    private String nama;
+    private String password;
+
+    @OneToMany(mappedBy = "role")
+    private List<UserRoles> list = new ArrayList<>();
+}
+
+```
+
+9 . userRoles
+
+```java
+package com.deni.springsecurity.entitas;
+
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.*;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "s_user_roles")
+public class UserRoles {
+
+    @Id
+    @GeneratedValue
+    private Integer id;
+
+    @ManyToOne
+    @JoinColumn(name = "id_user", nullable = false)
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "id_role", nullable = false)
+    private Role role;
+
+}
+
+```
+
+10. user repository 
+
+
+```java
+package com.deni.springsecurity.repository;
+
+import com.deni.springsecurity.entitas.User;
+import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface UserRepository extends PagingAndSortingRepository<User, Integer> {
+    User findByName(String name);
+}
+
+```
+
+11 . user principal
+
+
+```java
+
+
+package com.deni.springsecurity.entitas;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+public class UserPrincipal implements UserDetails {
+
+    private User user;
+
+    public UserPrincipal(User user) {
+        this.user = user;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        List<GrantedAuthority> listRole = new ArrayList<>();
+        this.user.getRoles().forEach((ur) -> {
+            listRole.add(new SimpleGrantedAuthority(ur.getRole().getNama()));
+        });
+        return listRole;
+    }
+
+    @Override
+    public String getPassword() {
+        return user.getPassword();
+    }
+
+    @Override
+    public String getUsername() {
+        return user.getName();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return user.isActive();
+    }
+}
+```
+
+12 . user service
+
+```java
+
+package com.deni.springsecurity.service;
+
+import com.deni.springsecurity.entitas.User;
+import com.deni.springsecurity.entitas.UserPrincipal;
+import com.deni.springsecurity.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService implements UserDetailsService {
+
+
+        @Autowired
+        private UserRepository userRepository;
+
+        @Override
+        public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
+                User user = userRepository.findByName(s);
+                if(user != null)
+                        return new UserPrincipal(user);
+        else return new UserPrincipal(new User());
+    }
+}
+
+```
+
+13 . tambahkan depedency baru 
+
+
+```properties
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.enable_lazy_load_no_trans=true
+```
+
+14 . buat dummy database di postgre kita 
+
+15 . disable in memory agar datanya ke simpna di database 
+
+```java
+package com.deni.springsecurity.config;
+
+import com.deni.springsecurity.service.UserService;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+@Configuration
+@EnableWebSecurity
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+//    @Override
+//    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+//        auth.inMemoryAuthentication()
+//                .passwordEncoder(passwordEncoder())
+//                .withUser("user")
+//                .password(passwordEncoder().encode("password"))
+//                .roles("USER");
+//    }
+
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/mahasiwa/new").hasRole("OPERATOR")
+                .antMatchers("/daftar/new").access("hasRole('ADMIN') and hasRole('OPERATOR')") // OR salah satu and dua duanya
+                .anyRequest().authenticated()
+                .and().formLogin().permitAll()
+                .and().logout().logoutSuccessUrl( "/home").permitAll();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider(UserService userService){
+        DaoAuthenticationProvider dao = new DaoAuthenticationProvider();
+        dao.setUserDetailsService(userService);
+        dao.setPasswordEncoder(passwordEncoder());
+        return dao;
+
+    }
+}
+
+```

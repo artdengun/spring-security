@@ -5,10 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -21,5 +20,7 @@ public class Role {
     @GeneratedValue
     private Integer id;
     private String nama;
-    private String password;
+
+    @OneToMany(mappedBy = "role")
+    private List<UserRoles> list = new ArrayList<>();
 }
