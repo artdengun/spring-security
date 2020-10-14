@@ -22,18 +22,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .roles("USER");
     }
 
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/mahasiwa/new").hasRole("OPERATOR")
+                .antMatchers("/daftar/new").access("hasRole('ADMIN') and hasRole('OPERATOR')") // OR salah satu and dua duanya
+                .anyRequest().authenticated()
+                .and().formLogin().permitAll()
+                .and().logout().logoutSuccessUrl( "/home").permitAll();
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-                .authorizeRequests()
-                .antMatchers("/mahasiwa/new").hasRole("OPERATOR")
-                .anyRequest().authenticated()
-                .and().formLogin().permitAll()
-                .and().logout().logoutSuccessUrl("/home").permitAll();
-    }
 }
